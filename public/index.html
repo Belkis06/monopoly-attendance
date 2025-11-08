@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Asistencia</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1>Registro de Asistencia</h1>
+
+  <!--  FORMULARIO: Registrar nuevo empleado -->
+  <section class="card">
+    <h2>Registrar Nuevo Empleado</h2>
+    <form id="empleadoForm">
+      <div class="form-group">
+        <label>Nombre:</label>
+        <input type="text" id="nombre" required>
+      </div>
+
+      <div class="form-group">
+        <label>Identificación:</label>
+        <input type="text" id="identificacion">
+      </div>
+
+      <div class="form-group">
+        <label>Cargo ID (opcional):</label>
+        <input type="number" id="cargo_id">
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de ingreso:</label>
+        <input type="date" id="fecha_ingreso">
+      </div>
+
+      <div class="form-group">
+        <label>Comentario:</label>
+        <input type="text" id="comentario">
+      </div>
+
+      <button type="submit">Agregar Empleado</button>
+    </form>
+  </section>
+
+  <!--  FORMULARIO: Registrar asistencia -->
+  <section class="card">
+    <h2>Registrar Asistencia</h2>
+    <form id="asistenciaForm">
+      <label>Empleado:</label>
+      <select id="empleado_id" required>
+        <option value="">Seleccionar empleado...</option>
+      </select>
+
+      <label>Tipo:</label>
+      <select id="tipo" required>
+        <option value="IN">Entrada</option>
+        <option value="OUT">Salida</option>
+      </select>
+
+      <label>Nota:</label>
+      <input type="text" id="nota" placeholder="Opcional">
+
+      <button type="submit">Registrar</button>
+    </form>
+  </section>
+
+  <!--  TABLA: Últimos registros -->
+  <section class="card">
+    <h2>Últimos Registros</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Empleado</th>
+          <th>Tipo</th>
+          <th>Fecha y Hora</th>
+          <th>Nota</th>
+        </tr>
+      </thead>
+      <tbody id="tablaAsistencia"></tbody>
+    </table>
+  </section>
+
+  <script>
+    //  Cargar lista de empleados activos
+    async function cargarEmpleados() {
+      const res = await fetch('/api/empleados');
+      const empleados = await res.json();
+      const select = document.getElementById('empleado_id');
+      select.innerHTML = '<option value="">Seleccionar empleado...</option>' +
+        empleados.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+    }
+
+    //  Cargar últimos registros de asistencia
+    async function cargarAsistencia() {
+      const res = await fetch('/api/asistencia');
+      const data = await res.json();
+      const tbody = document.getElementById('tablaAsistencia');
+      tbody.innerHTML = data.map(a => `
+        <tr>
+          <td>${a.id}</td>
+          <td>${a.nombre}</td>
+          <td>${a.tipo}</td>
+          <td>${new Date(a.marca_ts).toLocaleString()}</td>
+          <td>${a.nota || ''}</td>
+        </tr>`).join('');
+    }
+
+    //  Registrar asistencia
+    document.getElementById('asistenciaForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const empleado_id = document.getElementById('empleado_id').value;
+      const tipo = document.getElementById('tipo').value;
+      const nota = document.getElementById('nota').value;
+
+      const res = await fetch('/api/asistencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ empleado_id, tipo, nota })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      await cargarAsistencia();
+    });
+
+    //  Registrar nuevo empleado
+    document.getElementById('empleadoForm').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const data = {
+        nombre: document.getElementById('nombre').value,
+        identificacion: document.getElementById('identificacion').value,
+        cargo_id: document.getElementById('cargo_id').value,
+        fecha_ingreso: document.getElementById('fecha_ingreso').value,
+        comentario: document.getElementById('comentario').value
+      };
+
+      const res = await fetch('/api/empleados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      alert(result.message);
+
+      if (result.success) {
+        document.getElementById('empleadoForm').reset();
+        await cargarEmpleados(); // 🔄 actualiza lista en el select
+      }
+    });
+
+    // 🔹 Cargar todo al iniciar
+    cargarEmpleados();
+    cargarAsistencia();
+  </script>
+</body>
+</html>
