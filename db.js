@@ -1,11 +1,11 @@
 import mysql from "mysql2/promise";
 
 export const db = await mysql.createConnection({
-  host: "bnw4nsactvtxlhijrkr1-mysql.services.clever-cloud.com",
+  host: "bkoxdnwsbsjlh7g92nkv-mysql.services.clever-cloud.com",
   port: 3306,
-  user: "u7xcbg0zym9pquju",
-  password: "S4HNdBjggT2HL77zxQkz",
-  database: "bnw4nsactvtxlhijrkr1"
+  user: "uvcrwro1t4mesn3b",
+  password: "nxvhyOBT98OKXXhhLya4",
+  database: "bkoxdnwsbsjlh7g92nkv"
 });
 
 console.log("✅ Conectado a Clever Cloud MySQL");
