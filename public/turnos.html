@@ -1,0 +1,34 @@
+<h1>Turnos</h1>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Hora Inicio</th>
+      <th>Hora Fin</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody id="tablaTurnos"></tbody>
+</table>
+
+<script>
+async function cargarTurnos() {
+  try {
+    const res = await fetch('/api/turnos');
+    const turnos = await res.json();
+    document.getElementById('tablaTurnos').innerHTML = turnos.map(t => `
+      <tr>
+        <td>${t.id}</td>
+        <td>${t.nombre}</td>
+        <td>${t.hora_inicio}</td>
+        <td>${t.hora_fin}</td>
+        <td>${t.descripcion || ''}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error("Error cargando turnos:", err);
+  }
+}
+cargarTurnos();
+</script>

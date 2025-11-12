@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Empleados</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Asistencia</a>
+    <a href="empleados.html">Empleados</a>
+    <a href="tablas.html">Tablas</a>
+  </nav>
+
+  <h1>Empleados Activos</h1>
+
+  <section>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Identificación</th>
+          <th>Cargo</th>
+          <th>Fecha Ingreso</th>
+          <th>Activo</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody id="tablaEmpleados"></tbody>
+    </table>
+  </section>
+
+  <script>
+    async function cargarEmpleados() {
+      try {
+        const res = await fetch('/api/empleados');
+        const empleados = await res.json();
+        const tbody = document.getElementById('tablaEmpleados');
+        tbody.innerHTML = empleados.map(e => `
+          <tr>
+            <td>${e.id}</td>
+            <td>${e.nombre}</td>
+            <td>${e.identificacion || ''}</td>
+            <td>${e.cargo_nombre}</td>
+            <td>${new Date(e.fecha_ingreso).toLocaleDateString()}</td>
+            <td>${e.activo ? 'Sí' : 'No'}</td>
+            <td>${e.comentario || ''}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error cargando empleados:', err);
+      }
+    }
+
+    cargarEmpleados();
+  </script>
+</body>
+</html>

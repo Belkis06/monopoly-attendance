@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Asistencia</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <button onclick="mostrarSeccion('registro')">Asistencia</button>
+    <button onclick="mostrarSeccion('empleados')">Empleados</button>
+    <button onclick="mostrarSeccion('otros')">Resto</button>
+  </nav>
+
+  <!-- ================== REGISTRO ASISTENCIA ================== -->
+  <section id="registro" style="display:block;">
+    <h2>Registrar Asistencia</h2>
+    <form id="asistenciaForm">
+      <label>Empleado:</label>
+      <select id="empleado_id" required></select>
+
+      <label>Tipo:</label>
+      <select id="tipo" required>
+        <option value="IN">Entrada</option>
+        <option value="OUT">Salida</option>
+      </select>
+
+      <label>Nota:</label>
+      <input type="text" id="nota">
+
+      <button type="submit">Registrar</button>
+    </form>
+
+    <h3>Últimos registros</h3>
+    <table id="tablaAsistencia">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Empleado</th>
+          <th>Tipo</th>
+          <th>Fecha/Hora</th>
+          <th>Nota</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- ================== EMPLEADOS ================== -->
+  <section id="empleados" style="display:none;">
+    <h2>Empleados Activos</h2>
+    <table id="tablaEmpleados">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Cargo</th>
+          <th>Fecha Ingreso</th>
+          <th>Activo</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- ================== OTROS (turnos, feriados, vacaciones) ================== -->
+  <section id="otros" style="display:none;">
+    <h2>Feriados</h2>
+    <table id="tablaFeriados">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script>
+    function mostrarSeccion(id) {
+      document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    async function cargarEmpleados() {
+      const res = await fetch('/api/empleados');
+      const empleados = await res.json();
+      const select = document.getElementById('empleado_id');
+      select.innerHTML = empleados.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+
+      // llenar tabla de empleados
+      const tbody = document.querySelector('#tablaEmpleados tbody');
+      tbody.innerHTML = empleados.map(e => `
+        <tr>
+          <td>${e.id}</td>
+          <td>${e.nombre}</td>
+          <td>${e.cargo || ''}</td>
+          <td>${e.fecha_ingreso || ''}</td>
+          <td>${e.activo ? 'Sí' : 'No'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function cargarAsistencia() {
+      const res = await fetch('/api/registro_asistencia');
+      const registros = await res.json();
+      const tbody = document.querySelector('#tablaAsistencia tbody');
+      tbody.innerHTML = registros.map(r => `
+        <tr>
+          <td>${r.id}</td>
+          <td>${r.empleado}</td>
+          <td>${r.tipo}</td>
+          <td>${r.fecha_hora}</td>
+          <td>${r.nota}</td>
+          <td>
+            <button onclick="editarAsistencia(${r.id})">Editar</button>
+            <button onclick="borrarAsistencia(${r.id})">Eliminar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function cargarFeriados() {
+      const res = await fetch('/api/feriados');
+      const feriados = await res.json();
+      const tbody = document.querySelector('#tablaFeriados tbody');
+      tbody.innerHTML = feriados.map(f => `
+        <tr>
+          <td>${f.id}</td>
+          <td>${f.fecha}</td>
+          <td>${f.nombre}</td>
+          <td>${f.descripcion}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('asistenciaForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const empleado_id = document.getElementById('empleado_id').value;
+      const tipo = document.getElementById('tipo').value;
+      const nota = document.getElementById('nota').value;
+      await fetch('/api/asistencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ empleado_id, tipo, nota })
+      });
+      cargarAsistencia();
+      document.getElementById('nota').value = '';
+    });
+
+    async function borrarAsistencia(id) {
+      await fetch(`/api/registro_asistencia/${id}`, { method: 'DELETE' });
+      cargarAsistencia();
+    }
+
+    function editarAsistencia(id) {
+      const fila = document.querySelector(`#tablaAsistencia tbody tr:nth-child(${id})`);
+      const nuevoNota = prompt('Nueva nota:');
+      if (nuevoNota !== null) {
+        fetch(`/api/registro_asistencia/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: 'IN', nota: nuevoNota }) // para simplificar tipo fijo
+        }).then(() => cargarAsistencia());
+      }
+    }
+
+    cargarEmpleados();
+    cargarAsistencia();
+    cargarFeriados();
+  </script>
+</body>
+</html>

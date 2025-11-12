@@ -1,0 +1,34 @@
+<h1>Empleado Turno</h1>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Empleado ID</th>
+      <th>Turno ID</th>
+      <th>Fecha Inicio</th>
+      <th>Fecha Fin</th>
+    </tr>
+  </thead>
+  <tbody id="tablaEmpleadoTurno"></tbody>
+</table>
+
+<script>
+async function cargarEmpleadoTurno() {
+  try {
+    const res = await fetch('/api/empleado_turno');
+    const datos = await res.json();
+    document.getElementById('tablaEmpleadoTurno').innerHTML = datos.map(d => `
+      <tr>
+        <td>${d.id}</td>
+        <td>${d.empleado_id}</td>
+        <td>${d.turno_id}</td>
+        <td>${d.fecha_inicio}</td>
+        <td>${d.fecha_fin || ''}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error("Error cargando empleado_turno:", err);
+  }
+}
+cargarEmpleadoTurno();
+</script>

@@ -1,0 +1,34 @@
+<h1>Vacaciones</h1>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Empleado ID</th>
+      <th>Fecha Inicio</th>
+      <th>Fecha Fin</th>
+      <th>Comentario</th>
+    </tr>
+  </thead>
+  <tbody id="tablaVacaciones"></tbody>
+</table>
+
+<script>
+async function cargarVacaciones() {
+  try {
+    const res = await fetch('/api/vacaciones');
+    const vac = await res.json();
+    document.getElementById('tablaVacaciones').innerHTML = vac.map(v => `
+      <tr>
+        <td>${v.id}</td>
+        <td>${v.empleado_id}</td>
+        <td>${v.fecha_inicio}</td>
+        <td>${v.fecha_fin}</td>
+        <td>${v.comentario || ''}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error("Error cargando vacaciones:", err);
+  }
+}
+cargarVacaciones();
+</script>

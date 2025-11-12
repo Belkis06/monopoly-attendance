@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cargos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Asistencia</a>
+    <a href="empleados.html">Empleados</a>
+    <a href="cargos.html">Cargos</a>
+  </nav>
+
+  <h1>Cargos</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+      </tr>
+    </thead>
+    <tbody id="tablaCargos"></tbody>
+  </table>
+
+  <script>
+    async function cargarCargos() {
+      try {
+        const res = await fetch('/api/cargos');
+        const cargos = await res.json();
+        const tbody = document.getElementById('tablaCargos');
+        tbody.innerHTML = cargos.map(c => `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.nombre}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error("Error cargando cargos:", err);
+      }
+    }
+    cargarCargos();
+  </script>
+</body>
+</html>
