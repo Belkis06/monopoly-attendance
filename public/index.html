@@ -1,158 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro de Asistencia</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Asistencia</title>
+<style>
+body { margin:0; font-family: Arial,sans-serif; background:#E0F7FA; }
+header { background:#00BCD4; color:white; text-align:center; padding:1rem; font-size:1.8rem; }
+nav { display:flex; justify-content:center; background:#FFEB3B; padding:0.5rem; }
+nav button { background:#00BCD4; border:none; color:white; padding:0.7rem 1.5rem; margin:0 0.5rem; border-radius:8px; cursor:pointer; }
+nav button:hover { transform:translateY(-2px); box-shadow:0 4px 6px rgba(0,0,0,0.2); }
+main { max-width:1000px; margin:2rem auto; padding:1rem; background:white; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+section { display:none; }
+section.active { display:block; }
+h2 { color:#00BCD4; }
+form input, form select, form button { display:block; margin:0.5rem 0; padding:0.5rem; font-size:1rem; width:100%; max-width:400px; }
+form button { background:#FFEB3B; color:#333; font-weight:bold; border:none; border-radius:6px; cursor:pointer; }
+form button:hover { background:#FDD835; }
+table { width:100%; border-collapse:collapse; margin-top:1rem; }
+table, th, td { border:1px solid #ddd; }
+th, td { padding:0.7rem; text-align:left; }
+th { background:#00BCD4; color:white; }
+tr:nth-child(even) { background:#f2f2f2; }
+#mensajeAsistencia { margin:10px 0; padding:10px; border-radius:6px; display:none; font-weight:bold; }
+</style>
 </head>
 <body>
-  <h1>Registro de Asistencia</h1>
 
-  <!--  FORMULARIO: Registrar nuevo empleado -->
-  <section class="card">
-    <h2>Registrar Nuevo Empleado</h2>
-    <form id="empleadoForm">
-      <div class="form-group">
-        <label>Nombre:</label>
-        <input type="text" id="nombre" required>
-      </div>
+<header>Control de Asistencia</header>
 
-      <div class="form-group">
-        <label>Identificación:</label>
-        <input type="text" id="identificacion">
-      </div>
+<nav>
+    <button onclick="showSection('asistencia')">Registro de Asistencia</button>
+    <button onclick="showSection('turnos')">Turnos</button>
+    <button onclick="showSection('maquinas')">Máquinas</button>
+    <button onclick="showSection('feriados')">Feriados</button>
+    <button onclick="showSection('vacaciones')">Vacaciones</button>
+</nav>
 
-      <div class="form-group">
-        <label>Cargo ID (opcional):</label>
-        <input type="number" id="cargo_id">
-      </div>
-
-      <div class="form-group">
-        <label>Fecha de ingreso:</label>
-        <input type="date" id="fecha_ingreso">
-      </div>
-
-      <div class="form-group">
-        <label>Comentario:</label>
-        <input type="text" id="comentario">
-      </div>
-
-      <button type="submit">Agregar Empleado</button>
-    </form>
-  </section>
-
-  <!--  FORMULARIO: Registrar asistencia -->
-  <section class="card">
-    <h2>Registrar Asistencia</h2>
-    <form id="asistenciaForm">
-      <label>Empleado:</label>
-      <select id="empleado_id" required>
-        <option value="">Seleccionar empleado...</option>
-      </select>
-
-      <label>Tipo:</label>
-      <select id="tipo" required>
+<main>
+<section id="asistencia" class="active">
+<h2>Registro de Asistencia</h2>
+<form id="formAsistencia">
+    <select id="empleadoSelect" required></select>
+    <select id="tipoSelect" required>
         <option value="IN">Entrada</option>
         <option value="OUT">Salida</option>
-      </select>
+    </select>
+    <button type="submit">Registrar</button>
+</form>
 
-      <label>Nota:</label>
-      <input type="text" id="nota" placeholder="Opcional">
+<!-- Contenedor para mensajes de registro -->
+<div id="mensajeAsistencia"></div>
 
-      <button type="submit">Registrar</button>
-    </form>
-  </section>
+<h3>Últimos registros</h3>
+<table>
+<thead>
+<tr><th>Empleado</th><th>Máquina</th><th>Tipo</th><th>Fecha y Hora</th><th>Nota</th></tr>
+</thead>
+<tbody id="registrosAsistencia"></tbody>
+</table>
+</section>
 
-  <!--  TABLA: Últimos registros -->
-  <section class="card">
-    <h2>Últimos Registros</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Empleado</th>
-          <th>Tipo</th>
-          <th>Fecha y Hora</th>
-          <th>Nota</th>
-        </tr>
-      </thead>
-      <tbody id="tablaAsistencia"></tbody>
-    </table>
-  </section>
+<section id="turnos">
+<h2>Turnos</h2>
+<table>
+<thead><tr><th>Empleado</th><th>Hora Inicio</th><th>Hora Fin</th><th>Descripción</th></tr></thead>
+<tbody id="tablaTurnos"></tbody>
+</table>
+</section>
 
-  <script>
-    //  Cargar lista de empleados activos
-    async function cargarEmpleados() {
-      const res = await fetch('/api/empleados');
-      const empleados = await res.json();
-      const select = document.getElementById('empleado_id');
-      select.innerHTML = '<option value="">Seleccionar empleado...</option>' +
-        empleados.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+<section id="maquinas">
+<h2>Máquinas</h2>
+<table>
+<thead><tr><th>Empleado</th><th>Ubicación</th></tr></thead>
+<tbody id="tablaMaquinas"></tbody>
+</table>
+</section>
+
+<section id="feriados">
+<h2>Feriados</h2>
+<table>
+<thead><tr><th>Fecha</th><th>Empleado</th><th>Descripción</th></tr></thead>
+<tbody id="tablaFeriados"></tbody>
+</table>
+</section>
+
+<section id="vacaciones">
+<h2>Vacaciones</h2>
+<table>
+<thead><tr><th>Empleado</th><th>Inicio</th><th>Fin</th><th>Comentario</th></tr></thead>
+<tbody id="tablaVacaciones"></tbody>
+</table>
+</section>
+</main>
+
+<script>
+function showSection(id){
+    document.querySelectorAll("main section").forEach(sec=>sec.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+async function cargarEmpleados(){
+    const res=await fetch("/api/empleados");
+    const empleados=await res.json();
+    const select=document.getElementById("empleadoSelect");
+    select.innerHTML="";
+    empleados.forEach(emp=>{
+        const option=document.createElement("option");
+        option.value=emp.id;
+        option.textContent=`${emp.nombre} (${emp.cargo})`;
+        select.appendChild(option);
+    });
+}
+
+async function cargarAsistencia(){
+    const res=await fetch("/api/asistencia");
+    const registros=await res.json();
+    const tbody=document.getElementById("registrosAsistencia");
+    tbody.innerHTML="";
+    registros.forEach(r=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${r.empleado}</td><td>${r.maquina||""}</td><td>${r.tipo}</td><td>${r.marca_ts}</td><td>${r.nota||""}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function cargarTurnos(){
+    const res=await fetch("/api/turnos");
+    const turnos=await res.json();
+    const tbody=document.getElementById("tablaTurnos");
+    tbody.innerHTML="";
+    turnos.forEach(t=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${t.empleado}</td><td>${t.hora_inicio}</td><td>${t.hora_fin}</td><td>${t.descripcion}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function cargarMaquinas(){
+    const res=await fetch("/api/maquinas");
+    const maquinas=await res.json();
+    const tbody=document.getElementById("tablaMaquinas");
+    tbody.innerHTML="";
+    maquinas.forEach(m=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${m.empleado}</td><td>${m.ubicacion}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function cargarFeriados(){
+    const res=await fetch("/api/feriados");
+    const feriados=await res.json();
+    const tbody=document.getElementById("tablaFeriados");
+    tbody.innerHTML="";
+    feriados.forEach(f=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${f.fecha}</td><td>${f.empleado||""}</td><td>${f.descripcion}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+async function cargarVacaciones(){
+    const res=await fetch("/api/vacaciones");
+    const vacs=await res.json();
+    const tbody=document.getElementById("tablaVacaciones");
+    tbody.innerHTML="";
+    vacs.forEach(v=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${v.empleado}</td><td>${v.fecha_inicio}</td><td>${v.fecha_fin}</td><td>${v.comentario||""}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// -----------------------------
+// Formulario de asistencia con notificación
+// -----------------------------
+document.getElementById("formAsistencia").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const empleado_id=document.getElementById("empleadoSelect").value;
+    const tipo=document.getElementById("tipoSelect").value;
+    const res=await fetch("/api/asistencia",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({empleado_id,tipo})
+    });
+    const data=await res.json();
+
+    // Mostrar mensaje en la página
+    const divMensaje=document.getElementById("mensajeAsistencia");
+    divMensaje.style.display="block";
+
+    if(data.message){
+        divMensaje.textContent=data.message;
+        divMensaje.style.backgroundColor="#C8E6C9"; // verde
+        divMensaje.style.color="#256029";
+    } else {
+        divMensaje.textContent=data.error;
+        divMensaje.style.backgroundColor="#FFCDD2"; // rojo
+        divMensaje.style.color="#B71C1C";
     }
 
-    //  Cargar últimos registros de asistencia
-    async function cargarAsistencia() {
-      const res = await fetch('/api/asistencia');
-      const data = await res.json();
-      const tbody = document.getElementById('tablaAsistencia');
-      tbody.innerHTML = data.map(a => `
-        <tr>
-          <td>${a.id}</td>
-          <td>${a.nombre}</td>
-          <td>${a.tipo}</td>
-          <td>${new Date(a.marca_ts).toLocaleString()}</td>
-          <td>${a.nota || ''}</td>
-        </tr>`).join('');
-    }
+    // Ocultar mensaje después de 4 segundos
+    setTimeout(()=>{divMensaje.style.display="none";},4000);
 
-    //  Registrar asistencia
-    document.getElementById('asistenciaForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const empleado_id = document.getElementById('empleado_id').value;
-      const tipo = document.getElementById('tipo').value;
-      const nota = document.getElementById('nota').value;
-
-      const res = await fetch('/api/asistencia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ empleado_id, tipo, nota })
-      });
-
-      const result = await res.json();
-      alert(result.message);
-      await cargarAsistencia();
-    });
-
-    //  Registrar nuevo empleado
-    document.getElementById('empleadoForm').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const data = {
-        nombre: document.getElementById('nombre').value,
-        identificacion: document.getElementById('identificacion').value,
-        cargo_id: document.getElementById('cargo_id').value,
-        fecha_ingreso: document.getElementById('fecha_ingreso').value,
-        comentario: document.getElementById('comentario').value
-      };
-
-      const res = await fetch('/api/empleados', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      const result = await res.json();
-      alert(result.message);
-
-      if (result.success) {
-        document.getElementById('empleadoForm').reset();
-        await cargarEmpleados(); // 🔄 actualiza lista en el select
-      }
-    });
-
-    // 🔹 Cargar todo al iniciar
-    cargarEmpleados();
+    // Recargar tabla de asistencia
     cargarAsistencia();
-  </script>
+});
+
+async function init(){
+    await cargarEmpleados();
+    await cargarAsistencia();
+    await cargarTurnos();
+    await cargarMaquinas();
+    await cargarFeriados();
+    await cargarVacaciones();
+}
+
+init();
+</script>
+
 </body>
 </html>
