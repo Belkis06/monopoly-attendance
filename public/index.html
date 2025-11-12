@@ -46,6 +46,8 @@ tr:nth-child(even) { background:#f2f2f2; }
         <option value="IN">Entrada</option>
         <option value="OUT">Salida</option>
     </select>
+    <!-- NUEVO CAMPO NOTA -->
+    <input type="text" id="notaInput" placeholder="Nota (opcional)" />
     <button type="submit">Registrar</button>
 </form>
 
@@ -180,14 +182,15 @@ document.getElementById("formAsistencia").addEventListener("submit", async e=>{
     e.preventDefault();
     const empleado_id=document.getElementById("empleadoSelect").value;
     const tipo=document.getElementById("tipoSelect").value;
+    const nota=document.getElementById("notaInput").value; // <-- nota
+
     const res=await fetch("/api/asistencia",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({empleado_id,tipo})
+        body:JSON.stringify({empleado_id,tipo,nota}) // <-- enviar nota
     });
     const data=await res.json();
 
-    // Mostrar mensaje en la página
     const divMensaje=document.getElementById("mensajeAsistencia");
     divMensaje.style.display="block";
 
@@ -195,16 +198,14 @@ document.getElementById("formAsistencia").addEventListener("submit", async e=>{
         divMensaje.textContent=data.message;
         divMensaje.style.backgroundColor="#C8E6C9"; // verde
         divMensaje.style.color="#256029";
+        document.getElementById("notaInput").value=""; // limpiar campo nota
     } else {
         divMensaje.textContent=data.error;
         divMensaje.style.backgroundColor="#FFCDD2"; // rojo
         divMensaje.style.color="#B71C1C";
     }
 
-    // Ocultar mensaje después de 4 segundos
     setTimeout(()=>{divMensaje.style.display="none";},4000);
-
-    // Recargar tabla de asistencia
     cargarAsistencia();
 });
 

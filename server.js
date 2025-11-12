@@ -8,6 +8,7 @@ const PORT = 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -27,8 +28,22 @@ const pool = mysql.createPool({
 });
 
 // ---------------------
+// TEST DE CONEXIÓN
+// ---------------------
+(async () => {
+    try {
+        await pool.query("SELECT 1");
+        console.log("✅ Conexión a la base de datos exitosa");
+    } catch (err) {
+        console.error("❌ Error al conectar con la base de datos:", err.message);
+    }
+})();
+
+// ---------------------
 // RUTAS
 // ---------------------
+
+// Servir HTML
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
@@ -67,19 +82,26 @@ app.get("/api/asistencia", async (req, res) => {
 
 // Registrar asistencia
 app.post("/api/asistencia", async (req, res) => {
-    const { empleado_id, tipo } = req.body;
+    let { empleado_id, tipo, nota, maquina_id } = req.body;
+
     if (!empleado_id || !tipo) return res.status(400).json({ error: "Empleado y tipo son requeridos" });
+
+    if (tipo === "IN") tipo = "Entrada";
+else if (tipo === "OUT") tipo = "Salida";
+
 
     try {
         await pool.query(`
-            INSERT INTO registro_asistencia (empleado_id, tipo, marca_ts)
-            VALUES (?, ?, NOW())
-        `, [empleado_id, tipo]);
+            INSERT INTO registro_asistencia (empleado_id, tipo, marca_ts, nota, maquina_id)
+            VALUES (?, ?, NOW(), ?, ?)
+        `, [empleado_id, tipo, nota || null, maquina_id || null]);
+
         res.json({ message: "Asistencia registrada correctamente" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Turnos
 app.get("/api/turnos", async (req, res) => {
